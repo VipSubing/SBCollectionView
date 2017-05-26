@@ -12,7 +12,6 @@
 #import "UIView+SBCollectionCell.h"
 
 static NSInteger const __tagbase = 1000;
-static NSString *const __cachekey = @"__sb_collection_cache_key";
 @interface SBCollectionView()
 @property (strong,nonatomic) NSMutableArray *dataSource;
 @property (assign,nonatomic) NSInteger itemCount;
@@ -27,12 +26,12 @@ static NSString *const __cachekey = @"__sb_collection_cache_key";
     NSInteger _beforeCount;
 }
 /*
-// Only override drawRect: if you perform custom drawing.
-// An empty implementation adversely affects performance during animation.
-- (void)drawRect:(CGRect)rect {
-    // Drawing code
-}
-*/
+ // Only override drawRect: if you perform custom drawing.
+ // An empty implementation adversely affects performance during animation.
+ - (void)drawRect:(CGRect)rect {
+ // Drawing code
+ }
+ */
 
 static float screen_width(){
     return screen_width_ratio(1.0f);
@@ -67,7 +66,7 @@ static float screen_width_ratio(float ratio){
         _verticalSpace = 0;
         _minHorizontalSpace = 0;
         _cacheManager = [StaticCacheManager shareManager];
-        [_cacheManager createItemForKey:__cachekey];
+        [_cacheManager createItemForKey:[SBCollectionView __cacheKey]];
         _dataSource = [NSMutableArray new];
         _itemCount = 0;
         _beforeCount = 0;
@@ -133,7 +132,7 @@ static float screen_width_ratio(float ratio){
 }
 - (void)deleteItemsAtIndexPaths:(NSArray <NSIndexPath *>*)indexPaths{
     NSInteger index = [indexPaths firstObject].row+indexPaths.count;
-     NSInteger deleteCount = 0;
+    NSInteger deleteCount = 0;
     for (NSIndexPath *indexPath in indexPaths) {
         UIView *delItem = [self viewWithTag:[self tagWithIndexPath:indexPath]];
         if (!delItem) {
@@ -142,7 +141,7 @@ static float screen_width_ratio(float ratio){
         [delItem removeFromSuperview];
         deleteCount ++;
     }
-   
+    
     while (index<_beforeCount) {
         UIView *item = [self viewWithTag:[self tagWithIndexPath:[NSIndexPath indexPathForRow:index inSection:0]]];
         NSAssert(item,@"item of indexpath not exist");
@@ -205,7 +204,7 @@ static float screen_width_ratio(float ratio){
         [self insertItemsOfCount:count AtIndexPath:indexPath];
     } completion:^(BOOL finished) {
         if (completion) {
-             completion([self itemWithIndexPath:indexPath],_beforeCount);
+            completion([self itemWithIndexPath:indexPath],_beforeCount);
         }
     }];
 }
@@ -221,12 +220,12 @@ static float screen_width_ratio(float ratio){
 - (void)reloadItem:(UIView *)item atIndexPath:(NSIndexPath *)indexPath{
     [self reloadLayoutWithItem:item atIndexPath:indexPath];
     [self reloadContentWithItem:item atIndexPath:indexPath];
-//    NSLog(@"item rect: %@",NSStringFromCGRect(item.frame));
+    //    NSLog(@"item rect: %@",NSStringFromCGRect(item.frame));
 }
 
 /**
  对item 内容的更新
-
+ 
  @param item item
  @param indexPath indexpath
  */
@@ -239,7 +238,7 @@ static float screen_width_ratio(float ratio){
 }
 /**
  对item 布局的更新
-
+ 
  @param item item
  @param indexPath indexPath
  */
@@ -261,9 +260,9 @@ static float screen_width_ratio(float ratio){
     if (!_privateLayout) {
         _privateLayout = [[SBColletionLayout alloc] init];
     }
-     [_privateLayout clear];
+    [_privateLayout clear];
     _privateLayout.indexPath = indexPath;
-   
+    
     return _privateLayout;
 }
 - (NSInteger)itemCount{
@@ -300,15 +299,15 @@ static float screen_width_ratio(float ratio){
  */
 - (void)setAllowCache:(BOOL)allowCache{
     if (!allowCache) {
-        [_cacheManager removeItemForKey:__cachekey];
+        [_cacheManager removeItemForKey:[SBCollectionView __cacheKey]];
     }else{
-        [_cacheManager createItemForKey:__cachekey];
+        [_cacheManager createItemForKey:[SBCollectionView __cacheKey]];
     }
 }
 
 /**
  从代理方获取一个新的item
-
+ 
  @return new item
  */
 - (UIView *)newItem:(NSIndexPath *)indexPath{
@@ -326,10 +325,10 @@ static float screen_width_ratio(float ratio){
         item.userInteractionEnabled = YES;
     }
     item.allowClick = ^{
-        return _allowClick;
+        return weak.allowClick;
     };
     item.highLight = ^{
-        return _selectHighLight;
+        return weak.selectHighLight;
     };
     NSAssert(item, @"item initialize invalid");
     return item;
@@ -341,11 +340,11 @@ static float screen_width_ratio(float ratio){
     if (item) {
         return item;
     }
-    item = [_cacheManager anyObjectForKey:__cachekey];
+    item = [_cacheManager anyObjectForKey:[SBCollectionView __cacheKey]];
     if (!item) {
         item = [self newItem:indexPath];
     }
-//    [self addSubview:item];
+    //    [self addSubview:item];
     return item;
 }
 
@@ -369,12 +368,23 @@ static float screen_width_ratio(float ratio){
         self.didSelectItem(self,indexPath);
     }
 }
+- (void)dealloc{
+    [_cacheManager removeItemForKey:[SBCollectionView __cacheKey]];
+}
+- (void)removeFromSuperview{
+    [super removeFromSuperview];
+    [_cacheManager removeItemForKey:[SBCollectionView __cacheKey]];
+}
 - (void)addSubview:(UIView *)view{
     [super addSubview:view];
 }
 - (void)willRemoveSubview:(UIView *)subview{
     [super willRemoveSubview:subview];
-    [_cacheManager addObject:subview forKey:__cachekey];
+    [_cacheManager addObject:subview forKey:[SBCollectionView __cacheKey]];
 }
-
++ (NSString *)__cacheKey{
+    char data[16];
+    for (int x=0;x<16;data[x++] = (char)('A' + (arc4random_uniform(26))));
+    return [[NSString alloc] initWithBytes:data length:16 encoding:NSUTF8StringEncoding];
+}
 @end
