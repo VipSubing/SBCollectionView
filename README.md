@@ -8,11 +8,11 @@
 ##### 2.框架更轻量级，因为取消了滑动相关，两个层级的UIview相比UICollectionView复杂的视图层级更轻便.
 ##### 3.灵活的布局能力，可以方便的定义item的大小，delegate提供了一套自定义的布局方法。
 ##### 下面是效果图:
-##### ![image](https://github.com/pubin563783417/SBCollectionView/tree/master/Screenshot/pb_1.png)
-##### ![image](https://github.com/pubin563783417/SBCollectionView/tree/master/Screenshot/pb_2.png)
-##### ![image](https://github.com/pubin563783417/SBCollectionView/tree/master/Screenshot/pb_3.png)
-##### ![image](https://github.com/pubin563783417/SBCollectionView/tree/master/Screenshot/pb_4.png)
-##### ![image](https://github.com/pubin563783417/SBCollectionView/tree/master/Screenshot/Untitled.gif)
+##### ![image](https://github.com/pubin563783417/SBCollectionView/blob/master/Screenshot/pb_1.png)
+##### ![image](https://github.com/pubin563783417/SBCollectionView/blob/master/Screenshot/pb_2.png)
+##### ![image](https://github.com/pubin563783417/SBCollectionView/blob/master/Screenshot/pb_3.png)
+##### ![image](https://github.com/pubin563783417/SBCollectionView/blob/master/Screenshot/pb_4.png)
+##### ![image](https://github.com/pubin563783417/SBCollectionView/blob/master/Screenshot/Untitled.gif)
 ##### 框架提供了两套布局方式 block和delegate
 ##### 注意://代理的优先级将会高于block
 ##### /**
