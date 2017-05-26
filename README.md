@@ -1,4 +1,5 @@
 # SBCollectionView 1.0.0
+### 作者邮箱：15557109308@163.com 有问题可以联系作者
 ##### 作者常常需要在项目用到Item集合这样的布局方式，单是用UICollectionView去做发现代码很多而且不好自定义，所以花了一些时间写了专门处理
 ##### 这种item集合的一套框架.
 ##### 仿UICollectionView的布局方式，适用于少量有限的Item集合。支持了UICollectionVIew主要部分的操作，刷新，增，删。
