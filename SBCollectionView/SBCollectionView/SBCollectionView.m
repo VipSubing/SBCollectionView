@@ -10,7 +10,7 @@
 #import "SBColletionLayout.h"
 #import "StaticCacheManager.h"
 #import "UIView+SBCollectionCell.h"
-
+#import <objc/runtime.h>
 static NSInteger const __tagbase = 1000;
 @interface SBCollectionView()
 @property (strong,nonatomic) NSMutableArray *dataSource;
@@ -209,7 +209,7 @@ static float screen_width_ratio(float ratio){
     }];
 }
 - (void)moveItem:(UIView *)item forUnits:(NSInteger)units{
-    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:item.indexPath.row+units inSection:0];
+    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:item.sb_indexPath.row+units inSection:0];
     NSLog(@"indexPath.row:  %d",indexPath.row);
     if (indexPath.row<0 || indexPath.row>_beforeCount+units-1) {
         return;
@@ -317,23 +317,28 @@ static float screen_width_ratio(float ratio){
     }else if(self.item){
         item = _item(self,indexPath);
     }
+    UILongPressGestureRecognizer *longAction = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longAction:)];
+    longAction.minimumPressDuration = .05;
+    [item addGestureRecognizer:longAction];
     __weak typeof(self) weak = self;
-    item.clickItem = ^(NSIndexPath *indexPath){
+    item.sb_clickItem = ^(NSIndexPath *indexPath){
         [weak clickItemSelectorWithIndexPath:indexPath];
     };
     if (!item.userInteractionEnabled) {
         item.userInteractionEnabled = YES;
     }
-    item.allowClick = ^{
+    item.sb_allowClick = ^{
         return weak.allowClick;
     };
-    item.highLight = ^{
+    item.sb_highLight = ^{
         return weak.selectHighLight;
     };
     NSAssert(item, @"item initialize invalid");
     return item;
 }
-
+- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(nullable UIEvent *)event{
+    
+}
 - (UIView *)itemWithIndexPath:(NSIndexPath *)indexPath{
     
     UIView *item = [self viewWithTag:[self tagWithIndexPath:indexPath]];
@@ -354,7 +359,7 @@ static float screen_width_ratio(float ratio){
 - (void)drawItem:(UIView *)item layout:(SBColletionLayout *)layout{
     item.frame = layout.frame;
     item.bounds = layout.bounds;
-    item.indexPath = layout.indexPath;
+    item.sb_indexPath = layout.indexPath;
     item.tag = [self tagWithIndexPath:layout.indexPath];
     item.alpha = layout.alpha;
     item.hidden = layout.hidden;
@@ -387,4 +392,55 @@ static float screen_width_ratio(float ratio){
     for (int x=0;x<16;data[x++] = (char)('A' + (arc4random_uniform(26))));
     return [[NSString alloc] initWithBytes:data length:16 encoding:NSUTF8StringEncoding];
 }
+#pragma mark    -  tap
+- (void)longAction:(UILongPressGestureRecognizer *)longPress{
+    UIView *self_item = longPress.view;
+    if (longPress.state == UIGestureRecognizerStateBegan) {
+        if (!self_item.sb_effective) {
+            return;
+        }
+        if (self_item.sb_highLight) {
+            if (self_item.sb_highLight()) {
+                [self_item sb_addHighLight];
+            }
+        }
+    }else if (longPress.state == UIGestureRecognizerStateCancelled || longPress.state == UIGestureRecognizerStateFailed){
+        if (!self_item.sb_effective) {
+            return;
+        }
+        if (!self_item.sb_allowClick) {
+            return;
+        }
+        if (self_item.sb_highLight) {
+            if (self_item.sb_highLight()) {
+                [self_item sb_removeHighLight];
+            }
+        }
+    }else if (longPress.state == UIGestureRecognizerStateEnded){
+        if (!self_item.sb_effective) {
+            return;
+        }
+        if (!self_item.sb_allowClick) {
+            return;
+        }
+        
+        if (self_item.sb_highLight) {
+            if (self_item.sb_highLight()) {
+                [self_item sb_removeHighLight];
+            }
+        }
+        CGPoint point = [longPress locationInView:self];
+        CGPoint sb_point = [self convertPoint:point toView:self_item];
+        if (sb_point.x>=0 && sb_point.x<=self_item.bounds.size.width && sb_point.y>=0 && sb_point.y<=self_item.bounds.size.height)
+        {
+            if (self_item.sb_clickItem) {
+                self_item.sb_clickItem(self_item.sb_indexPath);
+            }
+        }
+        
+    }
+}
+
+
+
 @end

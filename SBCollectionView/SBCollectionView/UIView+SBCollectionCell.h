@@ -9,10 +9,13 @@
 #import <UIKit/UIKit.h>
 
 @interface UIView (SBCollectionCell)
-@property (strong,nonatomic) NSIndexPath *indexPath;
-@property (copy,nonatomic) void (^clickItem)(NSIndexPath *indexPath);
-@property (strong,nonatomic) CALayer *highLightLayer;
-@property (copy,nonatomic) BOOL (^allowClick)();
-@property (copy,nonatomic) BOOL (^highLight)();
-@property (assign,nonatomic) BOOL effective;
+@property (strong,nonatomic) NSIndexPath *sb_indexPath;
+@property (copy,nonatomic) void (^sb_clickItem)(NSIndexPath *indexPath);
+@property (strong,nonatomic) CALayer *sb_highLightLayer;
+@property (copy,nonatomic) BOOL (^sb_allowClick)();
+@property (copy,nonatomic) BOOL (^sb_highLight)();
+@property (assign,nonatomic) BOOL sb_effective;
+
+- (void)sb_addHighLight;
+- (void)sb_removeHighLight;
 @end
